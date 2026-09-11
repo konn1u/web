@@ -1,0 +1,55 @@
+body{
+    margin: 0;
+    width: 799px;
+    height: 1080px;
+    font-family: Arial, sans-serif;
+}
+
+.info {
+    display: flex;
+    align-items: center;
+}
+
+.info-pic {
+    margin: 30px;
+    width: 160px;
+    height: 160px;
+    border-radius: 100%;
+}
+
+.info-name-name {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.occupation {
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+.contact {
+    margin-left: auto;
+    text-align: right;
+}
+.contact-text {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.contact-number {
+    font-size: 14px;
+    font-style: bold;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.contact-email {
+    font-size: 14px;
+}
+
+hr {
+  margin-left: 30px;
+  width: calc(100% - 30px);
+}
+
+   

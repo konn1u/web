@@ -52,4 +52,57 @@ hr {
   width: calc(100% - 30px);
 }
 
-   
+.text {
+    font-size: 14px;
+    text-align: left;
+    margin-left: 30px;
+}
+
+table {
+    width: calc(100% - 30px);
+    margin: 30px;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #5A9645;
+}
+
+th, td {
+    border-right: 1px solid #5A9645;
+    border-bottom: 1px solid #5A9645;
+    padding: 10px;
+    width: 50%;
+}
+
+th:last-child, td:last-child {
+    border-right: none;
+}
+
+tr:last-child td{
+    border-bottom: none;
+}
+
+td {
+    padding: 20px;
+}
+
+th {
+    color: #5A9645;
+}
+
+table ul, table ol {
+    margin: 0 auto;
+    padding: 0;
+    display: block;
+    width: fit-content;
+}
+
+table li a {
+    color: inherit;
+    text-decoration: none;
+}
+
+table li:hover {
+    color: #5A9645;
+}

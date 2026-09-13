@@ -1,5 +1,6 @@
 body{
-    margin: 0;
+    margin: 30px;
+    padding: 0;
     width: 799px;
     height: 1080px;
     font-family: Arial, sans-serif;
@@ -7,14 +8,21 @@ body{
 
 .info {
     display: flex;
-    align-items: center;
 }
 
 .info-pic {
-    margin: 30px;
     width: 160px;
     height: 160px;
     border-radius: 100%;
+    margin-bottom: 30px;
+    margin-right: 30px;
+}
+
+.info-wrapper {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .info-name-name {
@@ -28,7 +36,6 @@ body{
 }
 
 .contact {
-    margin-left: auto;
     text-align: right;
 }
 .contact-text {
@@ -47,25 +54,20 @@ body{
     font-size: 14px;
 }
 
-hr {
-  margin-left: 30px;
-  width: calc(100% - 30px);
-}
-
 .text {
     font-size: 14px;
     text-align: left;
-    margin-left: 30px;
+    margin-bottom: 30px;
 }
 
 table {
-    width: calc(100% - 30px);
-    margin: 30px;
+    width: inherit;
     border-collapse: separate;
     border-spacing: 0;
     border-radius: 12px;
     overflow: hidden;
     border: 1px solid #5A9645;
+    margin-bottom: 30px;
 }
 
 th, td {

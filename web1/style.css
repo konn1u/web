@@ -1,15 +1,21 @@
+/* ==================== 1. Базовые стили ==================== */
+
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-body{
+body {
     justify-self: center;
-    margin: 30px auto;
+    margin: 0 auto;
     padding: 30px 29.5px;
     width: 799px;
     height: 1080px;
     font-family: 'Inter', sans-serif;
 }
+
+/* ==================== 2. Шапка профиля ==================== */
 
 .info {
     display: flex;
@@ -43,6 +49,7 @@ body{
 .contact {
     text-align: right;
 }
+
 .contact-text {
     font-size: 24px;
     font-weight: bold;
@@ -59,6 +66,8 @@ body{
     font-size: 14px;
 }
 
+/* ==================== 3. Блок "Обо мне" ==================== */
+
 .text {
     font-family: 'Inter', sans-serif;
     font-weight: 400;
@@ -73,6 +82,8 @@ body{
     font-weight: 600;
 }
 
+/* ==================== 4. Таблица ==================== */
+
 table {
     width: 100%;
     border-collapse: separate;
@@ -83,18 +94,20 @@ table {
     margin-bottom: 30px;
 }
 
-th, td {
+th, 
+td {
     border-right: 1px solid #5A9645;
     border-bottom: 1px solid #5A9645;
     padding: 10px;
     width: 50%;
 }
 
-th:last-child, td:last-child {
+th:last-child, 
+td:last-child {
     border-right: none;
 }
 
-tr:last-child td{
+tr:last-child td {
     border-bottom: none;
 }
 
@@ -106,7 +119,8 @@ th {
     color: #5A9645;
 }
 
-table ul, table ol {
+table ul, 
+table ol {
     margin: 0 auto;
     padding: 0;
     display: block;
@@ -122,12 +136,13 @@ table li:hover {
     color: #5A9645;
 }
 
+/* ==================== 5. Технологии ==================== */
+
 .tech-header {
-    margin-top: 60px;
     background: #5A9645;
     padding: 5px;
     text-align: center;
-    color:#FFFFFF;
+    color: #FFFFFF;
     border-radius: 5px;
 }
 
@@ -142,8 +157,8 @@ table li:hover {
     flex-direction: column;
     justify-content: center;
     flex: 1;
-    width: 97px;
-    height: 129px;
+    width: 129px;
+    height: 97px;
     align-items: center;
     text-align: center;
     transition: transform 0.3s ease, box-shadow ease;
@@ -158,9 +173,89 @@ table li:hover {
     object-position: center;
 }
 
+.tech-pic img[alt="PostgreSQL"] {
+    width: auto;
+}
+
 .tech-pic:hover {
-    box-shadow:  0 0 25px #5A9645;
+    box-shadow: 0 0 25px #5A9645;
     transform: translateY(-4px);
     cursor: pointer;
 }
 
+/* ==================== 6. Форма обратной связи ==================== */
+
+.feedback {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 50px;
+}
+
+.feedback-header {
+    background: #5A9645;
+    color: #FFFFFF;
+    text-align: center;
+    padding: 6px;
+    border-radius: 5px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.feedback-row {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.feedback-field {
+    flex: 1;
+    display: block;
+    width: 100%;
+}
+
+.feedback-input,
+.feedback-textarea {
+    width: 100%;
+    border: 1px solid #BDBDBD;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: #333333;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.feedback-input {
+    height: 42px;
+}
+
+.feedback-textarea {
+    height: 120px;
+    resize: none;
+    margin-bottom: 25px;
+}
+
+.feedback-input::placeholder,
+.feedback-textarea::placeholder {
+    color: #A0A0A0;
+}
+
+.feedback-btn {
+    align-self: center;
+    background: #5A9645;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 32px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.feedback-btn:hover {
+    background: #497b37;
+}

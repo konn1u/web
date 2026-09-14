@@ -10,25 +10,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
     <div class="info">
-        <img  class="info-pic" src="./images/Ellipse.jpg" alt="photo">
-            <div class="info-wrapper">
-                <div class="info-name">
-                    <div class="info-name-name">Иван Петров</div>
-                    <div class="occupation">Frontend Developer</div>
-                </div>
-                <div class="contact">
-                    <div class="contact-text">Контакты</div>
-                    <div class="contact-number">+79223344455</div>
-                    <div class="contact-email">email@yandex.ru</div>
-                </div>
+        <img class="info-pic" src="./images/Ellipse.jpg" alt="photo">
+        <div class="info-wrapper">
+            <div class="info-name">
+                <div class="info-name-name">Иван Петров</div>
+                <div class="occupation">Frontend Developer</div>
             </div>
+            <div class="contact">
+                <div class="contact-text">Контакты</div>
+                <div class="contact-number">+79223344455</div>
+                <div class="contact-email">email@yandex.ru</div>
+            </div>
+        </div>
     </div>
+
     <hr>
     <br>
+
     <div class="text">
         <b>Немного обо мне:</b> это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века. В то время некий безымянный печатник создал большую коллекцию размеров и форм шрифтов, используя Lorem Ipsum для распечатки образцов. Lorem Ipsum не только успешно пережил без заметных изменений пять веков...
     </div>
+
     <table>
         <thead>
             <tr>
@@ -54,8 +58,9 @@
                     </ol>
                 </td>
             </tr>
-      </tbody>
+        </tbody>
     </table>
+
     <div class="tech">
         <div class="tech-header">Интересующие технологии</div>
         <div class="tech-wrapper">
@@ -72,8 +77,8 @@
                 <div>VueJS</div>
             </div>
             <div class="tech-pic">
-                <img src="./images/PostgreSQL.png" alt="PostreSQL">
-                <div>PostreSQL</div>
+                <img src="./images/PostgreSQL.png" alt="PostgreSQL">
+                <div>PostgreSQL</div>
             </div>
             <div class="tech-pic">
                 <img src="./images/Docker.png" alt="Docker">
@@ -81,7 +86,24 @@
             </div>
         </div>
     </div>
-    <div class="feedback"></div>
-    
+
+    <form class="feedback">
+        <div class="feedback-header">Форма обратной связи</div>
+        <div class="feedback-row">
+            <label class="feedback-field">
+                <input type="text" name="username" placeholder="Ваше имя" class="feedback-input">
+            </label>
+            <label class="feedback-field">
+                <input type="tel" name="phone" placeholder="Телефон" class="feedback-input">
+            </label>
+        </div>
+
+        <label class="feedback-field">
+            <textarea name="message" placeholder="Ваш вопрос" class="feedback-textarea"></textarea>
+        </label>
+
+        <button type="submit" class="feedback-btn">Отправить</button>
+    </form>
+
 </body>
 </html>

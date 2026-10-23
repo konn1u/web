@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notes App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-frame">
+    <!-- Левая панель навигации (60px) -->
+    <nav class="nav-rail">
+      <button class="rail-btn" id="toggleSidebarBtn" title="Свернуть/Развернуть панель">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+
+      <button class="rail-btn" id="newNoteBtn" title="Новая заметка">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </button>
+
+      <button class="rail-btn" title="Настройки">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+    </nav>
+
+    <!-- Средняя колонка заметок -->
+    <aside class="notes-column" id="notesColumn">
+      <div class="notes-header">
+        <div class="sort-control">
+          <span>Сортировка по дате</span>
+          <span>▾</span>
+        </div>
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Поиск заметок">
+        </div>
+      </div>
+      <div class="notes-list" id="notesListContainer"></div>
+    </aside>
+
+    <!-- Правая панель заметки -->
+    <main class="editor-column">
+      <!-- 1. Верхняя область над инструментами (навигация < > и корзина) -->
+      <div class="editor-top-bar">
+        <div class="nav-arrows">
+          <button class="top-icon-btn" id="prevNoteBtn" title="Предыдущая заметка">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <button class="top-icon-btn" id="nextNoteBtn" title="Следующая заметка">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <div class="top-bar-right">
+          <div class="top-divider"></div>
+          <button class="top-icon-btn delete-btn" id="deleteNoteBtn" title="Удалить заметку">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Панель инструментов (заглушка tools) -->
+      <header class="editor-toolbar">
+        <span class="tools-placeholder">tools</span>
+      </header>
+
+      <!-- 3. Рабочая область текста -->
+      <div class="editor-scroll">
+        <div class="doc-meta" id="docMeta">--</div>
+        <input type="text" class="doc-title-input" id="docTitle" placeholder="Заголовок">
+        <div class="doc-content" id="docBody" contenteditable="true" spellcheck="false"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

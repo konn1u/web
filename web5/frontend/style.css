@@ -1,0 +1,372 @@
+:root {
+  --bg-primary: #ffffff;
+  --bg-sidebar: #f5f6f9;
+  --bg-rail: #5433ff;
+  --border-color: #e4e7ed;
+  --text-main: #1f2329;
+  --text-muted: #86909c;
+  --rail-width: 60px;
+  --sidebar-width: 300px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #dbe2ef;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.app-frame {
+  width: 100vw;
+  height: 100vh;
+  max-width: 1250px;
+  max-height: 850px;
+  background: var(--bg-primary);
+  border-radius: 16px;
+  display: flex;
+  border: none;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* 1. Левая навигационная колонка */
+.nav-rail {
+  width: var(--rail-width);
+  min-width: var(--rail-width);
+  background: var(--bg-rail);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0;
+  gap: 16px;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.rail-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.rail-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.rail-btn:active {
+  transform: scale(0.95);
+}
+
+.nav-rail .rail-btn:last-child {
+  margin-top: auto;
+}
+
+/* 2. Колонка со списком заметок */
+.notes-column {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  /* Плавная анимация полного скрытия */
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.2s ease;
+}
+
+/* Полное скрытие блока с переключением по заметкам */
+.notes-column.minimized {
+  width: 0 !important;
+  min-width: 0 !important;
+  border-right: none;
+}
+
+.notes-header {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.sort-control {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  justify-content: space-between;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  outline: none;
+  font-size: 12px;
+  background: #ffffff;
+}
+
+.group-label {
+  padding: 12px 16px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--bg-sidebar);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  border-bottom: 1px solid rgba(228, 231, 237, 0.5);
+  white-space: nowrap;
+}
+
+.notes-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  list-style: none;
+}
+
+.notes-list::-webkit-scrollbar {
+  width: 5px;
+}
+.notes-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.note-card {
+  position: relative; /* Необходимо для точного позиционирования полоски */
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  background: transparent;
+  transition: background 0.15s;
+}
+
+.note-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--bg-rail);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.note-card:hover::before {
+  opacity: 1;
+}
+
+.note-card:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.note-card.active::before {
+  opacity: 1;
+}
+
+.note-card.active {
+  background: #ffffff;
+}
+
+.date-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 32px;
+  flex-shrink: 0;
+}
+
+.date-badge .day-num {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-main);
+}
+
+.date-badge .day-week {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.note-preview {
+  flex: 1;
+  min-width: 0;
+}
+
+.note-preview .note-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.note-preview .note-snippet {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.notes-column.minimized .group-label {
+  display: none;
+}
+
+.notes-column.minimized .note-card {
+  justify-content: center;
+  padding: 14px 0;
+}
+
+/* 3. Панель редактора */
+.editor-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  min-width: 0;
+}
+
+.editor-top-bar {
+  height: 48px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: #ffffff;
+}
+
+.nav-arrows {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.top-bar-right {
+  display: flex;
+  align-items: center;
+}
+
+.top-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-color);
+  margin-right: 12px;
+}
+
+.top-icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: #64748b;
+  transition: all 0.15s;
+}
+
+.top-icon-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  color: var(--text-main);
+}
+
+.top-icon-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.top-icon-btn.delete-btn:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.editor-toolbar {
+  height: 42px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  background: #fafbfc;
+}
+
+.tools-placeholder {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: #f1f3f5;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.editor-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 36px 48px;
+}
+
+.doc-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.doc-title-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 20px;
+  background: transparent;
+}
+
+.doc-content {
+  outline: none;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #2e3440;
+  min-height: 250px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

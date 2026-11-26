@@ -1,0 +1,24 @@
+{
+  "name": "notes-postgres-tiptap",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"node --watch server/index.js\" \"vite --host 127.0.0.1\"",
+    "build": "vite build",
+    "start": "node server/index.js",
+    "db:migrate": "node server/migrate.js"
+  },
+  "dependencies": {
+    "@tiptap/core": "^3.11.1",
+    "@tiptap/extension-placeholder": "^3.11.1",
+    "@tiptap/starter-kit": "^3.11.1",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "vite": "^7.2.4"
+  }
+}

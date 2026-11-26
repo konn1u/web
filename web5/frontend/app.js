@@ -1,3 +1,8 @@
+import { Editor } from '@tiptap/core';
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
+import { NotesAPI } from './api.js';
+
 document.addEventListener('DOMContentLoaded', async () => {
   const toggleBtn = document.getElementById('toggleSidebarBtn');
   const notesColumn = document.getElementById('notesColumn');
@@ -5,249 +10,308 @@ document.addEventListener('DOMContentLoaded', async () => {
   const newNoteBtn = document.getElementById('newNoteBtn');
   const searchInput = document.getElementById('searchInput');
   const docTitle = document.getElementById('docTitle');
-  const docBody = document.getElementById('docBody');
   const docMeta = document.getElementById('docMeta');
-
+  const saveStatus = document.getElementById('saveStatus');
+  const editorToolbar = document.getElementById('editorToolbar');
   const prevNoteBtn = document.getElementById('prevNoteBtn');
   const nextNoteBtn = document.getElementById('nextNoteBtn');
   const deleteNoteBtn = document.getElementById('deleteNoteBtn');
 
   let currentNotes = [];
   let selectedNoteId = null;
+  let searchSequence = 0;
+  let isHydratingEditor = false;
+  const saveTimers = new Map();
 
   const WEEKDAYS = ['ВС', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ'];
   const MONTHS_GENITIVE = [
     'Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня',
     'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'
   ];
+  const EMPTY_DOCUMENT = { type: 'doc', content: [{ type: 'paragraph' }] };
 
-  // Переключение ширины панели
-  toggleBtn.addEventListener('click', () => {
-    notesColumn.classList.toggle('minimized');
+  const debounce = (callback, delay) => {
+    let timer;
+    const debounced = (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => callback(...args), delay);
+    };
+    debounced.cancel = () => clearTimeout(timer);
+    return debounced;
+  };
+
+  const setStatus = (message, state = '') => {
+    saveStatus.textContent = message;
+    saveStatus.dataset.state = state;
+  };
+
+  let editor;
+  editor = new Editor({
+    element: document.getElementById('docBody'),
+    extensions: [
+      StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
+      Placeholder.configure({ placeholder: 'Начните писать заметку…' })
+    ],
+    content: EMPTY_DOCUMENT,
+    editable: false,
+    editorProps: {
+      attributes: { spellcheck: 'true', 'aria-label': 'Текст заметки' }
+    },
+    onUpdate: ({ editor: activeEditor }) => {
+      if (isHydratingEditor) return;
+      const note = currentNotes.find(item => item.id === selectedNoteId);
+      if (!note) return;
+      note.content = activeEditor.getJSON();
+      note.contentText = activeEditor.getText({ blockSeparator: '\n' });
+      scheduleSave(note.id);
+      renderList();
+    },
+    onSelectionUpdate: updateToolbar,
+    onTransaction: updateToolbar
   });
 
-  // Фильтрация заметок по поисковой строке
-  function getVisibleNotes() {
-    const query = searchInput.value.trim().toLowerCase();
-    if (!query) return currentNotes;
-    return currentNotes.filter(n =>
-      n.title.toLowerCase().includes(query) ||
-      n.content.toLowerCase().includes(query)
-    );
-  }
+  toggleBtn.addEventListener('click', () => notesColumn.classList.toggle('minimized'));
 
-  // Группировка заметок по месяцам (от новых к старым)
   function groupNotesByMonth(notesList) {
     const groups = {};
-
     notesList.forEach(note => {
-      const d = new Date(note.createdAt);
-      const year = d.getFullYear();
-      const month = d.getMonth();
-      const groupKey = `${year}-${String(month + 1).padStart(2, '0')}`;
-
-      if (!groups[groupKey]) {
-        const monthName = d.toLocaleString('ru-RU', { month: 'long' });
-        const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-        groups[groupKey] = {
-          label: `${capitalizedMonth} ${year}`,
+      const date = new Date(note.createdAt);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      if (!groups[key]) {
+        const month = date.toLocaleString('ru-RU', { month: 'long' });
+        groups[key] = {
+          label: `${month.charAt(0).toUpperCase()}${month.slice(1)} ${date.getFullYear()}`,
           items: []
         };
       }
-      groups[groupKey].items.push(note);
+      groups[key].items.push(note);
     });
-
-    return Object.keys(groups)
-      .sort((a, b) => b.localeCompare(a))
-      .map(key => groups[key]);
+    return Object.keys(groups).sort((a, b) => b.localeCompare(a)).map(key => groups[key]);
   }
 
-  // Обновление доступности кнопок навигации < и >
   function updateNavButtons() {
-    const list = getVisibleNotes();
-    const index = list.findIndex(n => n.id === selectedNoteId);
-
-    if (index === -1) {
-      prevNoteBtn.disabled = true;
-      nextNoteBtn.disabled = true;
-      deleteNoteBtn.disabled = true;
-      return;
-    }
-
-    deleteNoteBtn.disabled = false;
-    prevNoteBtn.disabled = (index <= 0);
-    nextNoteBtn.disabled = (index >= list.length - 1);
+    const index = currentNotes.findIndex(note => note.id === selectedNoteId);
+    const unavailable = index === -1;
+    deleteNoteBtn.disabled = unavailable;
+    prevNoteBtn.disabled = unavailable || index <= 0;
+    nextNoteBtn.disabled = unavailable || index >= currentNotes.length - 1;
   }
 
-  // Отрисовка списка с разделением по месяцам
   function renderList() {
-    const list = getVisibleNotes();
-    notesListContainer.innerHTML = '';
-
-    if (list.length === 0) {
-      const emptyMsg = document.createElement('div');
-      emptyMsg.style.padding = '20px 16px';
-      emptyMsg.style.fontSize = '12px';
-      emptyMsg.style.color = 'var(--text-muted)';
-      emptyMsg.textContent = 'Заметок не найдено';
-      notesListContainer.appendChild(emptyMsg);
+    notesListContainer.replaceChildren();
+    if (!currentNotes.length) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-notes';
+      empty.textContent = searchInput.value.trim() ? 'Заметок не найдено' : 'Создайте первую заметку';
+      notesListContainer.appendChild(empty);
       updateNavButtons();
       return;
     }
 
-    const monthGroups = groupNotesByMonth(list);
-
-    monthGroups.forEach(group => {
-      const groupLabel = document.createElement('div');
-      groupLabel.className = 'group-label';
-      groupLabel.textContent = group.label;
-      notesListContainer.appendChild(groupLabel);
+    groupNotesByMonth(currentNotes).forEach(group => {
+      const label = document.createElement('div');
+      label.className = 'group-label';
+      label.textContent = group.label;
+      notesListContainer.appendChild(label);
 
       group.items.forEach(note => {
-        const d = new Date(note.createdAt);
-        const day = String(d.getDate()).padStart(2, '0');
-        const weekday = WEEKDAYS[d.getDay()];
-
-        const card = document.createElement('div');
+        const date = new Date(note.createdAt);
+        const card = document.createElement('button');
+        card.type = 'button';
         card.className = `note-card ${note.id === selectedNoteId ? 'active' : ''}`;
         card.dataset.id = note.id;
 
-        const firstLine = note.content.split('\n').find(l => l.trim().length > 0) || 'Нет текста...';
-
-        card.innerHTML = `
-          <div class="date-badge">
-            <span class="day-num">${day}</span>
-            <span class="day-week">${weekday}</span>
-          </div>
-          <div class="note-preview">
-            <div class="note-title">${note.title || 'Без названия'}</div>
-            <div class="note-snippet">${firstLine}</div>
-          </div>
-        `;
-
-        card.addEventListener('click', () => {
-          selectedNoteId = note.id;
-          displaySelectedNote();
-          renderList();
-        });
-
+        const dateBadge = document.createElement('span');
+        dateBadge.className = 'date-badge';
+        dateBadge.innerHTML = `<span class="day-num">${String(date.getDate()).padStart(2, '0')}</span><span class="day-week">${WEEKDAYS[date.getDay()]}</span>`;
+        const preview = document.createElement('span');
+        preview.className = 'note-preview';
+        const title = document.createElement('span');
+        title.className = 'note-title';
+        title.textContent = note.title || 'Без названия';
+        const snippet = document.createElement('span');
+        snippet.className = 'note-snippet';
+        snippet.textContent = note.contentText?.split('\n').find(line => line.trim()) || 'Нет текста…';
+        preview.append(title, snippet);
+        card.append(dateBadge, preview);
+        card.addEventListener('click', () => selectNote(note.id));
         notesListContainer.appendChild(card);
       });
     });
-
     updateNavButtons();
   }
 
-  // Отображение выбранной заметки в окне редактора
+  function selectNote(id) {
+    selectedNoteId = id;
+    displaySelectedNote();
+    renderList();
+  }
+
   function displaySelectedNote() {
-    const note = currentNotes.find(n => n.id === selectedNoteId);
+    const note = currentNotes.find(item => item.id === selectedNoteId);
+    isHydratingEditor = true;
     if (!note) {
       docTitle.value = '';
-      docBody.textContent = '';
-      docMeta.textContent = '--';
       docTitle.disabled = true;
-      docBody.contentEditable = 'false';
-      updateNavButtons();
-      return;
+      docMeta.textContent = '--';
+      editor.commands.setContent(EMPTY_DOCUMENT, { emitUpdate: false });
+      editor.setEditable(false);
+      setStatus('');
+    } else {
+      docTitle.disabled = false;
+      docTitle.value = note.title;
+      editor.commands.setContent(note.content || EMPTY_DOCUMENT, { emitUpdate: false });
+      editor.setEditable(true);
+      const date = new Date(note.createdAt);
+      const time = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      docMeta.textContent = `${date.getDate()} ${MONTHS_GENITIVE[date.getMonth()]} ${date.getFullYear()}, ${time}`;
+      setStatus('Сохранено', 'saved');
     }
-
-    docTitle.disabled = false;
-    docBody.contentEditable = 'true';
-    docTitle.value = note.title;
-    docBody.textContent = note.content;
-
-    const d = new Date(note.createdAt);
-    const day = d.getDate();
-    const month = MONTHS_GENITIVE[d.getMonth()];
-    const year = d.getFullYear();
-    const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    docMeta.textContent = `${day} ${month} ${year}, ${time}`;
-
+    isHydratingEditor = false;
+    updateToolbar();
     updateNavButtons();
   }
 
-  // Навигация кнопками < и >
-  prevNoteBtn.addEventListener('click', () => {
-    const list = getVisibleNotes();
-    const index = list.findIndex(n => n.id === selectedNoteId);
-    if (index > 0) {
-      selectedNoteId = list[index - 1].id;
-      displaySelectedNote();
-      renderList();
+  function scheduleSave(id) {
+    clearTimeout(saveTimers.get(id));
+    setStatus('Сохранение…', 'saving');
+    saveTimers.set(id, setTimeout(() => saveNote(id), 700));
+  }
+
+  async function saveNote(id) {
+    saveTimers.delete(id);
+    const note = currentNotes.find(item => item.id === id);
+    if (!note) return;
+    try {
+      const saved = await NotesAPI.update(id, {
+        title: note.title,
+        content: note.content,
+        contentText: note.contentText
+      });
+      note.updatedAt = saved.updatedAt;
+      if (selectedNoteId === id) setStatus('Сохранено', 'saved');
+    } catch (error) {
+      if (selectedNoteId === id) setStatus('Ошибка сохранения', 'error');
+      console.error(error);
     }
+  }
+
+  function updateToolbar() {
+    if (!editorToolbar || !editor) return;
+    const activeActions = {
+      bold: editor.isActive('bold'), italic: editor.isActive('italic'),
+      strike: editor.isActive('strike'), code: editor.isActive('code'),
+      heading1: editor.isActive('heading', { level: 1 }),
+      heading2: editor.isActive('heading', { level: 2 }),
+      bulletList: editor.isActive('bulletList'), orderedList: editor.isActive('orderedList'),
+      blockquote: editor.isActive('blockquote')
+    };
+    editorToolbar.querySelectorAll('[data-action]').forEach(button => {
+      button.classList.toggle('active', Boolean(activeActions[button.dataset.action]));
+      button.disabled = !editor.isEditable ||
+        (button.dataset.action === 'undo' && !editor.can().chain().focus().undo().run()) ||
+        (button.dataset.action === 'redo' && !editor.can().chain().focus().redo().run());
+    });
+  }
+
+  editorToolbar.addEventListener('click', event => {
+    const button = event.target.closest('[data-action]');
+    if (!button || button.disabled) return;
+    const commands = {
+      bold: () => editor.chain().focus().toggleBold().run(),
+      italic: () => editor.chain().focus().toggleItalic().run(),
+      strike: () => editor.chain().focus().toggleStrike().run(),
+      code: () => editor.chain().focus().toggleCode().run(),
+      heading1: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
+      heading2: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+      bulletList: () => editor.chain().focus().toggleBulletList().run(),
+      orderedList: () => editor.chain().focus().toggleOrderedList().run(),
+      blockquote: () => editor.chain().focus().toggleBlockquote().run(),
+      undo: () => editor.chain().focus().undo().run(),
+      redo: () => editor.chain().focus().redo().run(),
+      clear: () => editor.chain().focus().unsetAllMarks().clearNodes().run()
+    };
+    commands[button.dataset.action]?.();
+    updateToolbar();
+  });
+
+  prevNoteBtn.addEventListener('click', () => {
+    const index = currentNotes.findIndex(note => note.id === selectedNoteId);
+    if (index > 0) selectNote(currentNotes[index - 1].id);
   });
 
   nextNoteBtn.addEventListener('click', () => {
-    const list = getVisibleNotes();
-    const index = list.findIndex(n => n.id === selectedNoteId);
-    if (index !== -1 && index < list.length - 1) {
-      selectedNoteId = list[index + 1].id;
-      displaySelectedNote();
-      renderList();
-    }
+    const index = currentNotes.findIndex(note => note.id === selectedNoteId);
+    if (index >= 0 && index < currentNotes.length - 1) selectNote(currentNotes[index + 1].id);
   });
 
-  // Удаление заметки
   deleteNoteBtn.addEventListener('click', async () => {
     if (!selectedNoteId) return;
-
-    const list = getVisibleNotes();
-    const currentIndex = list.findIndex(n => n.id === selectedNoteId);
-
-    await NotesAPI.delete(selectedNoteId);
-    currentNotes = currentNotes.filter(n => n.id !== selectedNoteId);
-
-    const remainingList = getVisibleNotes();
-    if (remainingList.length > 0) {
-      const nextIndex = currentIndex < remainingList.length ? currentIndex : remainingList.length - 1;
-      selectedNoteId = remainingList[nextIndex].id;
-    } else {
-      selectedNoteId = null;
+    const id = selectedNoteId;
+    const index = currentNotes.findIndex(note => note.id === id);
+    clearTimeout(saveTimers.get(id));
+    saveTimers.delete(id);
+    try {
+      await NotesAPI.delete(id);
+      currentNotes = currentNotes.filter(note => note.id !== id);
+      selectedNoteId = currentNotes[Math.min(index, currentNotes.length - 1)]?.id || null;
+      displaySelectedNote();
+      renderList();
+    } catch (error) {
+      setStatus(error.message, 'error');
     }
-
-    displaySelectedNote();
-    renderList();
   });
 
-  // Редактирование в реальном времени
   docTitle.addEventListener('input', () => {
-    const note = currentNotes.find(n => n.id === selectedNoteId);
+    const note = currentNotes.find(item => item.id === selectedNoteId);
     if (!note) return;
     note.title = docTitle.value;
-    NotesAPI.update(note.id, { title: note.title });
+    scheduleSave(note.id);
     renderList();
   });
 
-  docBody.addEventListener('input', () => {
-    const note = currentNotes.find(n => n.id === selectedNoteId);
-    if (!note) return;
-    note.content = docBody.textContent;
-    NotesAPI.update(note.id, { content: note.content });
-    renderList();
-  });
-
-  // Создание новой заметки
   newNoteBtn.addEventListener('click', async () => {
-    const newNote = await NotesAPI.create();
-    currentNotes.unshift(newNote);
-    selectedNoteId = newNote.id;
-    searchInput.value = '';
-    renderList();
-    displaySelectedNote();
-    docTitle.focus();
+    try {
+      const newNote = await NotesAPI.create();
+      searchInput.value = '';
+      currentNotes.unshift(newNote);
+      selectNote(newNote.id);
+      docTitle.focus();
+      docTitle.select();
+    } catch (error) {
+      setStatus(error.message, 'error');
+    }
   });
 
-  // Поиск по заметкам
-  searchInput.addEventListener('input', () => {
-    renderList();
-    updateNavButtons();
-  });
+  const runSearch = debounce(async query => {
+    const sequence = ++searchSequence;
+    notesListContainer.classList.add('loading');
+    try {
+      await Promise.all([...saveTimers.keys()].map(id => saveNote(id)));
+      const notes = await NotesAPI.fetchAll(query);
+      if (sequence !== searchSequence) return;
+      currentNotes = notes;
+      if (!currentNotes.some(note => note.id === selectedNoteId)) {
+        selectedNoteId = currentNotes[0]?.id || null;
+        displaySelectedNote();
+      }
+      renderList();
+    } catch (error) {
+      setStatus(error.message, 'error');
+    } finally {
+      if (sequence === searchSequence) notesListContainer.classList.remove('loading');
+    }
+  }, 300);
 
-  // Инициализация
-  currentNotes = await NotesAPI.fetchAll();
-  if (currentNotes.length > 0) {
-    selectedNoteId = currentNotes[0].id;
+  searchInput.addEventListener('input', () => runSearch(searchInput.value.trim()));
+
+  try {
+    currentNotes = await NotesAPI.fetchAll();
+    selectedNoteId = currentNotes[0]?.id || null;
     displaySelectedNote();
+    renderList();
+  } catch (error) {
+    notesListContainer.innerHTML = `<div class="empty-notes error-message">${error.message}</div>`;
+    setStatus('Нет соединения с API', 'error');
   }
-  renderList();
 });

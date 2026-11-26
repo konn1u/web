@@ -65,6 +65,7 @@
         </div>
 
         <div class="top-bar-right">
+          <span class="save-status" id="saveStatus" aria-live="polite"></span>
           <div class="top-divider"></div>
           <button class="top-icon-btn delete-btn" id="deleteNoteBtn" title="Удалить заметку">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -77,21 +78,33 @@
         </div>
       </div>
 
-      <!-- 2. Панель инструментов (заглушка tools) -->
-      <header class="editor-toolbar">
-        <span class="tools-placeholder">tools</span>
+      <!-- 2. Панель инструментов Tiptap -->
+      <header class="editor-toolbar" id="editorToolbar" aria-label="Форматирование текста">
+        <button class="tool-btn" type="button" data-action="bold" title="Жирный (Ctrl+B)"><strong>B</strong></button>
+        <button class="tool-btn" type="button" data-action="italic" title="Курсив (Ctrl+I)"><em>I</em></button>
+        <button class="tool-btn" type="button" data-action="strike" title="Зачёркнутый"><s>S</s></button>
+        <button class="tool-btn" type="button" data-action="code" title="Код"><span class="tool-code">&lt;/&gt;</span></button>
+        <span class="tool-separator"></span>
+        <button class="tool-btn tool-text-btn" type="button" data-action="heading1" title="Заголовок 1">H1</button>
+        <button class="tool-btn tool-text-btn" type="button" data-action="heading2" title="Заголовок 2">H2</button>
+        <button class="tool-btn" type="button" data-action="bulletList" title="Маркированный список">•≡</button>
+        <button class="tool-btn" type="button" data-action="orderedList" title="Нумерованный список">1.</button>
+        <button class="tool-btn" type="button" data-action="blockquote" title="Цитата">“</button>
+        <span class="tool-separator"></span>
+        <button class="tool-btn" type="button" data-action="undo" title="Отменить (Ctrl+Z)">↶</button>
+        <button class="tool-btn" type="button" data-action="redo" title="Повторить (Ctrl+Shift+Z)">↷</button>
+        <button class="tool-btn tool-text-btn" type="button" data-action="clear" title="Очистить форматирование">Tx</button>
       </header>
 
       <!-- 3. Рабочая область текста -->
       <div class="editor-scroll">
         <div class="doc-meta" id="docMeta">--</div>
         <input type="text" class="doc-title-input" id="docTitle" placeholder="Заголовок">
-        <div class="doc-content" id="docBody" contenteditable="true" spellcheck="false"></div>
+        <div class="doc-content" id="docBody"></div>
       </div>
     </main>
   </div>
 
-  <script src="api.js"></script>
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
